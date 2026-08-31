@@ -538,7 +538,6 @@ For testing and local demonstration, the database auto-seeds:
 | **Super Admin Portal** | `admin@civicsense.in` | `Winston@2006` | Global Administration |
 | **MCC Admin** | `admin@mangaluru.gov.in` | `Winston@2006` | City Municipal Oversight |
 | **Corporator (Ward 18)** | `corporator.kavoor@mangaluru.gov.in` | `qwerty` | Ward 18 - Kavoor |
-| **Corporator (Ward 15)** | `dhritim07@gmail.com` | `qwerty` | Ward 15 - Kunjathbail South |
 
 ---
 
