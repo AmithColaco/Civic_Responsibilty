@@ -1,0 +1,148 @@
+.dashboard-footer-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 40px;
+  background-color: var(--footer-bg, #ffffff);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--footer-border, #e2e8f0);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+  font-size: 0.8rem;
+  color: var(--footer-text, #64748b);
+  z-index: 100000;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* CELESTIAL TOGGLE STRATAGEM */
+.footer-left-zone {
+  display: flex;
+  align-items: center;
+}
+
+.theme-switch-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+
+.celestial-icon {
+  font-size: 0.95rem;
+  transition:
+    opacity 0.3s ease,
+    filter 0.3s ease;
+}
+
+/* Forces the sun to look deep yellow/amber */
+.sun-icon {
+  filter: drop-shadow(0 0 2px #f59e0b);
+}
+
+/* Forces the moon to take on a clean, cool silver/slate tint */
+.moon-icon {
+  filter: saturate(0) brightness(1.2) drop-shadow(0 0 2px #94a3b8);
+  opacity: 0.4; /* Dimmed out when light mode is active */
+}
+
+/* When dark mode is active, adjust the visibility states */
+html[data-theme="dark"] .sun-icon {
+  opacity: 0.4;
+}
+
+html[data-theme="dark"] .moon-icon {
+  opacity: 1;
+}
+
+/* TOGGLE CONTAINER MECHANICS */
+.celestial-toggle-container {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 22px;
+}
+
+.celestial-toggle-container input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.celestial-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: 0.3s ease;
+  border-radius: 22px;
+  border: 1px solid #e2e8f0;
+}
+
+/* The sliding circular thumb */
+.celestial-slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 4px;
+  bottom: 3px;
+  background-color: #ffffff;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* When checked, shift slider to the right (Dark Mode / Moon side) */
+input:checked + .celestial-slider {
+  background-color: #1e293b;
+  border-color: #334155;
+}
+
+input:checked + .celestial-slider:before {
+  transform: translateX(20px);
+  background-color: #e2e8f0;
+}
+
+/* RIGHT STRATAGEM */
+.footer-right-zone {
+  display: flex;
+  align-items: center;
+}
+
+.visitor-badge {
+  background-color: var(--badge-bg, #f1f5f9);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 500;
+  border: 1px solid var(--badge-border, #e2e8f0);
+  transition: all 0.3s ease;
+}
+
+.counter-digit {
+  color: var(--badge-text, #1e293b);
+}
+
+@media (max-width: 500px) {
+  .dashboard-footer-bar {
+    padding: 0 10px;
+    font-size: 0.72rem;
+  }
+  .footer-center-zone {
+    display: none;
+  }
+  .visitor-badge {
+    padding: 2px 6px;
+  }
+}

@@ -1,0 +1,115 @@
+.toast-notification-box {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  width: 320px;
+  background-color: #ffffff;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  z-index: 999999;
+  animation: toastSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes toastSlideIn {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast-content-body {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  gap: 12px;
+}
+
+.toast-icon-symbol {
+  font-weight: bold;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.toast-success .toast-icon-symbol {
+  color: var(--resolved-color);
+  background-color: #dcfce7;
+}
+
+.toast-error .toast-icon-symbol {
+  color: var(--pending-color);
+  background-color: #ffedd5;
+}
+
+.toast-message-text {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  flex-grow: 1;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.toast-dismiss-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.toast-dismiss-btn:hover {
+  background-color: #f1f5f9;
+  color: var(--text-main);
+}
+
+/* Horizontal Progress Bar Rules */
+.toast-progress-bar-container {
+  width: 100%;
+  height: 3px;
+  background-color: var(--divider);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.toast-progress-bar-fill {
+  height: 100%;
+  width: 100%;
+  animation: toastCountdown 5s linear forwards;
+}
+
+.toast-success .toast-progress-bar-fill {
+  background-color: var(--resolved-color);
+}
+
+.toast-error .toast-progress-bar-fill {
+  background-color: var(--pending-color);
+}
+
+@keyframes toastCountdown {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}

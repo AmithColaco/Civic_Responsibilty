@@ -1,0 +1,16 @@
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+*.env
+
+# Dependencies
+node_modules/
+
+# Uploads
+uploads/*
+!.gitkeep
+
+# Logs
+logs/
+*.log

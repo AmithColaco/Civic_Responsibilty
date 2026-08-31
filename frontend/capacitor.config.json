@@ -1,0 +1,8 @@
+{
+  "appId": "com.civicsense.app",
+  "appName": "CivicSense",
+  "webDir": "dist",
+  "server": {
+    "cleartext": true
+  }
+}
