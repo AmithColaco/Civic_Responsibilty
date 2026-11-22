@@ -94,6 +94,7 @@ const determineSeverity = (locType, size) => {
             return 'Medium (Hinders Daily Routine / Minor Hazard)';
         }
     }
+    return 'Low (General Maintenance / Inquiry)';
 };
 
 const MANGALORE_WARD_ALIASES = {
@@ -464,12 +465,11 @@ const getMangaluruWard = (lat, lon, address = '') => {
 
 // Gemini AI Multimodal analysis for grievance photos
 // Model cascade: tries each model in order, skips on quota (429) or not-found (404)
-// Priority: gemini-3.1-flash-lite (active & verified) → gemini-3.5-flash → gemini-2.0-flash → gemini-2.0-flash-lite
+// Priority: gemini-2.0-flash (active & verified) → gemini-2.0-flash-lite → gemini-1.5-flash
 const GEMINI_MODELS = [
-    'gemini-3.1-flash-lite',  // Confirmed working and has active quota
-    'gemini-3.5-flash',       // High-demand fallback
-    'gemini-2.0-flash',       // Standard model
-    'gemini-2.0-flash-lite',  // Lite model
+    'gemini-2.0-flash',       // Current stable model
+    'gemini-2.0-flash-lite',  // Lite fallback
+    'gemini-1.5-flash',       // Legacy fallback
 ];
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -594,14 +594,17 @@ Respond ONLY with a single raw JSON object. No markdown, no code fences, no extr
 
     // ── Model cascade: try each model, skip on 429/quota, retry once on transient errors ──
     for (const model of GEMINI_MODELS) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
         console.log(`🤖 Trying Gemini model: ${model} ...`);
 
         let response;
         try {
             response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-goog-api-key': apiKey
+                },
                 body: JSON.stringify(requestBody)
             });
         } catch (networkErr) {
@@ -1415,7 +1418,10 @@ router.post('/submit', upload.array('media', 10), async (req, res) => {
             // Tag the proper ward based on coordinates & address (even if geocoding failed/empty)
             wardNumber = getMangaluruWard(extractedLat, extractedLon, `${landmark || ''} ${resolvedAddr}`);
         } else {
-            // Mock Mangaluru-based coordinate fallback for map dashboard markers
+            // No real coordinates available — use jittered Mangaluru centre as placeholder for map display only.
+            // ⚠️ WARNING: These are NOT real coordinates. The complaint will appear at an approximate
+            // city-centre location on the map. Proximity duplicate detection will be unreliable for this submission.
+            console.warn(`⚠️ No GPS coordinates available for this submission (no EXIF, no device GPS). Applying random city-centre fallback for map display only.`);
             extractedLat = 12.91 + (Math.random() * 0.04 - 0.02);
             extractedLon = 74.85 + (Math.random() * 0.04 - 0.02);
             wardNumber = getMangaluruWard(extractedLat, extractedLon, landmark || wardNumber || '');
@@ -1502,50 +1508,71 @@ router.post('/submit', upload.array('media', 10), async (req, res) => {
 
         const mediaUrlsString = uploadedUrls.join(',');
 
-        const countResult = await pool.request().query(`SELECT COUNT(*) AS total FROM ${targetDB}.dbo.COMPLAINTS`);
-        const totalCount = countResult.recordset[0].total;
-        const newComplaintNumber = totalCount + 1;
+        // Complaint number generation using serializable transaction to prevent race conditions
+        const transaction = new sql.Transaction(pool);
+        await transaction.begin(sql.ISOLATION_LEVEL.SERIALIZABLE);
+        let newComplaintNumber;
+        try {
+            const countResult = await transaction.request()
+                .query(`SELECT ISNULL(MAX(complaint_no), 0) + 1 AS next_no FROM ${targetDB}.dbo.COMPLAINTS WITH (UPDLOCK, HOLDLOCK)`);
+            newComplaintNumber = countResult.recordset[0].next_no;
 
-        const sqlDate = extractedDate || new Date();
+            const sqlDate = extractedDate || new Date();
 
-        // Automatically determine locationType and issueSize using AI model & NLP telemetry
-        const { locationType: aiLocType, issueSize: aiSize } = determineAILocationAndSize(description, landmark, resolvedAddr, category, aiResult);
-        const finalLocationType = aiLocType;
-        const finalIssueSize = aiSize;
-        severity = determineSeverity(finalLocationType, finalIssueSize);
-        console.log(`🤖 AI Determined Location Type: "${finalLocationType}", Issue Size: "${finalIssueSize}" → Urgency Matrix Severity: "${severity}"`);
+            // Automatically determine locationType and issueSize using AI model & NLP telemetry
+            const { locationType: aiLocType, issueSize: aiSize } = determineAILocationAndSize(description, landmark, resolvedAddr, category, aiResult);
+            const finalLocationType = aiLocType;
+            const finalIssueSize = aiSize;
+            severity = determineSeverity(finalLocationType, finalIssueSize);
+            console.log(`🤖 AI Determined Location Type: "${finalLocationType}", Issue Size: "${finalIssueSize}" → Urgency Matrix Severity: "${severity}"`);
 
-        await pool.request()
-            .input('complaintNo', sql.Int, newComplaintNumber)
-            .input('wardNumber', sql.NVarChar, wardNumber)
-            .input('department', sql.NVarChar, department)
-            .input('category', sql.NVarChar, category || aiResult?.issue_detected || 'General')
-            .input('description', sql.NVarChar, description)
-            .input('landmark', sql.NVarChar, landmark)
-            .input('severity', sql.NVarChar, severity)
-            .input('altPhone', sql.VarChar, altPhone)
-            .input('whatsappConsent', sql.VarChar, whatsappConsent || 'false')
-            .input('mediaAttachments', sql.NVarChar, mediaUrlsString)
-            .input('createdAt', sql.DateTime, sqlDate)
-            .input('latitude', sql.Decimal(9, 6), extractedLat)
-            .input('longitude', sql.Decimal(9, 6), extractedLon)
-            .input('complaineeEmail', sql.NVarChar, complaineeEmail || 'citizen@civicsense.in')
-            .input('locationType', sql.NVarChar, finalLocationType)
-            .input('issueSize', sql.NVarChar, finalIssueSize)
-            .input('parentComplaintId', sql.Int, parentComplaintId)
-            .input('isPotentialDuplicate', sql.Bit, isPotentialDuplicate)
-            .query(`
-                INSERT INTO ${targetDB}.dbo.COMPLAINTS (
-                    complaint_no, ward_number, department, category, description, 
-                    landmark, severity, alternate_phone, whatsapp_consent, media_attachments, status, vote_score, created_at, latitude, longitude, complainee_email, location_type, issue_size, parent_complaint_id, is_potential_duplicate
-                ) VALUES (
-                    @complaintNo, @wardNumber, @department, @category, @description, 
-                    @landmark, @severity, @altPhone, @whatsappConsent, @mediaAttachments, 'Pending', 0, @createdAt, @latitude, @longitude, @complaineeEmail, @locationType, @issueSize, @parentComplaintId, @isPotentialDuplicate
-                )
-            `);
+            await transaction.request()
+                .input('complaintNo', sql.Int, newComplaintNumber)
+                .input('wardNumber', sql.NVarChar, wardNumber)
+                .input('department', sql.NVarChar, department)
+                .input('category', sql.NVarChar, category || aiResult?.issue_detected || 'General')
+                .input('description', sql.NVarChar, description)
+                .input('landmark', sql.NVarChar, landmark)
+                .input('severity', sql.NVarChar, severity)
+                .input('altPhone', sql.VarChar, altPhone)
+                .input('whatsappConsent', sql.VarChar, whatsappConsent || 'false')
+                .input('mediaAttachments', sql.NVarChar, mediaUrlsString)
+                .input('createdAt', sql.DateTime, sqlDate)
+                .input('latitude', sql.Decimal(9, 6), extractedLat)
+                .input('longitude', sql.Decimal(9, 6), extractedLon)
+                .input('complaineeEmail', sql.NVarChar, complaineeEmail || 'citizen@civicsense.in')
+                .input('locationType', sql.NVarChar, finalLocationType)
+                .input('issueSize', sql.NVarChar, finalIssueSize)
+                .input('parentComplaintId', sql.Int, parentComplaintId)
+                .input('isPotentialDuplicate', sql.Bit, isPotentialDuplicate)
+                .query(`
+                    INSERT INTO ${targetDB}.dbo.COMPLAINTS (
+                        complaint_no, ward_number, department, category, description,
+                        landmark, severity, alternate_phone, whatsapp_consent, media_attachments, status, vote_score, created_at, latitude, longitude, complainee_email, location_type, issue_size, parent_complaint_id, is_potential_duplicate
+                    ) VALUES (
+                        @complaintNo, @wardNumber, @department, @category, @description,
+                        @landmark, @severity, @altPhone, @whatsappConsent, @mediaAttachments, 'Pending', 0, @createdAt, @latitude, @longitude, @complaineeEmail, @locationType, @issueSize, @parentComplaintId, @isPotentialDuplicate
+                    )
+                `);
+
+            await transaction.commit();
+        } catch (txErr) {
+            await transaction.rollback();
+            throw txErr;
+        }
+
+        // Record complaint filing on the blockchain audit trail
+        const { recordTransaction } = require('../utils/blockchainLedger');
+        recordTransaction('COMPLAINT_FILED', newComplaintNumber, {
+            ward: wardNumber,
+            department,
+            severity,
+            lat: extractedLat,
+            lon: extractedLon
+        });
 
         // Dispatch copy of grievance by email to Corporator, Ward Officer, Complainee, and other authorities
-        await dispatchGrievanceEmails(newComplaintNumber, wardNumber, department, description, landmark, severity, sqlDate, complaineeEmail, category, userSelectedDepartment);
+        await dispatchGrievanceEmails(newComplaintNumber, wardNumber, department, description, landmark, severity, extractedDate || new Date(), complaineeEmail, category, userSelectedDepartment);
 
         res.status(200).json({ 
             success: true, 
@@ -1559,17 +1586,32 @@ router.post('/submit', upload.array('media', 10), async (req, res) => {
     }
 });
 
-// GET: Fetch Tracking Log Grid Feed
+// GET: Fetch Tracking Log Grid Feed (authenticated — returns only the caller's own complaints)
 router.get('/my-logs', async (req, res) => {
     try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ success: false, error: 'Authorization required.' });
+        const token = authHeader.split(' ')[1];
+        let citizenEmail;
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            citizenEmail = (decoded.email || decoded.EMAIL || '').toLowerCase().trim();
+        } catch (jwtErr) {
+            return res.status(401).json({ success: false, error: 'Invalid or expired token.' });
+        }
+        if (!citizenEmail) return res.status(401).json({ success: false, error: 'Could not resolve user identity.' });
+
         const pool = await poolPromise;
         const targetDB = process.env.DB_NAME;
-        
-        const result = await pool.request().query(`
-            SELECT TOP 50 
-                complaint_no, ward_number, department, category, description, 
-                landmark, severity, alternate_phone, whatsapp_consent, media_attachments, status, vote_score, created_at, latitude, longitude, complainee_email, location_type, issue_size, after_media_attachments, assigned_contractor, parent_complaint_id, merged_into_id, is_potential_duplicate 
-            FROM ${targetDB}.dbo.COMPLAINTS 
+
+        const result = await pool.request()
+            .input('email', sql.NVarChar, citizenEmail)
+            .query(`
+            SELECT TOP 50
+                complaint_no, ward_number, department, category, description,
+                landmark, severity, whatsapp_consent, media_attachments, status, vote_score, created_at, latitude, longitude, complainee_email, location_type, issue_size, after_media_attachments, assigned_contractor, parent_complaint_id, merged_into_id, is_potential_duplicate
+            FROM ${targetDB}.dbo.COMPLAINTS
+            WHERE LOWER(complainee_email) = LOWER(@email)
             ORDER BY created_at DESC
         `);
 
@@ -1639,7 +1681,7 @@ router.patch('/:id/upvote', async (req, res) => {
     try {
         const complaintId = parseInt(req.params.id, 10);
         if (isNaN(complaintId)) {
-            return res.status(400).json({ success: true, error: 'Invalid identification argument parameters.' });
+            return res.status(400).json({ success: false, error: 'Invalid identification argument parameters.' });
         }
 
         // 1. Authenticate user identity via incoming Bearer Token
@@ -2050,7 +2092,11 @@ router.patch('/:complaintNo/assign-contractor', async (req, res) => {
         const authHeader = req.headers.authorization;
         if (!authHeader) return res.status(401).json({ success: false, error: 'Authorization required.' });
         const token = authHeader.split(' ')[1];
-        jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        if (decoded.role === 'citizen') {
+            return res.status(403).json({ success: false, error: 'Access denied. Only officials can assign contractors.' });
+        }
 
         const { contractor_email } = req.body;
         if (!contractor_email) {
@@ -2074,7 +2120,7 @@ router.patch('/:complaintNo/assign-contractor', async (req, res) => {
         sendMail({
             to: contractor_email.trim(),
             subject: `[CivicSense Assignment] Assigned to Complaint #CS-${complaintNo}`,
-            text: `Hello,\n\nYou have been assigned as contractor / field worker for Complaint #CS-${complaintNo}.\n\nPlease log in at http://localhost:5173 to review complaint details and post progress updates.\n\nRegards,\nCivicSense Administration`
+            text: `Hello,\n\nYou have been assigned as contractor / field worker for Complaint #CS-${complaintNo}.\n\nPlease log in at ${process.env.APP_BASE_URL || 'http://localhost:5173'} to review complaint details and post progress updates.\n\nRegards,\nCivicSense Administration`
         }).catch(err => console.error('Contractor assignment email notification error:', err.message));
 
         res.status(200).json({
@@ -2248,7 +2294,7 @@ Ticket Details:
   - Ward: ${wardNumber}
   - Status: ${ticket.status}
 
-You can log in at http://localhost:5173/login to track your active grievance or post verification notes.
+You can log in at ${process.env.APP_BASE_URL || 'http://localhost:5173'}/login to track your active grievance or post verification notes.
 
 Warm regards,
 CivicSense Administrator,
@@ -2280,7 +2326,7 @@ Grievance Summary:
   - Severity: ${ticket.severity}
   - Status: ${ticket.status}
 
-Please log in to http://localhost:5173 to coordinate action and monitor resolution workflow steps.
+Please log in to ${process.env.APP_BASE_URL || 'http://localhost:5173'} to coordinate action and monitor resolution workflow steps.
 
 Warm regards,
 CivicSense Administrator,
@@ -2351,15 +2397,12 @@ router.patch('/:complaintNo/contractor-complete', async (req, res) => {
             .query(`UPDATE ${targetDB}.dbo.COMPLAINTS SET status = 'Pending Verification' WHERE complaint_no = @complaintNo`);
 
         // Post a system comment indicating that the contractor has marked it as done
-        const commentId = Math.floor(100000 + Math.random() * 900000);
         await pool.request()
-            .input('id', sql.Int, commentId)
             .input('complaintNo', sql.Int, complaintNo)
-            .input('authorEmail', sql.VarChar, contractorEmail)
             .input('authorName', sql.VarChar, decoded.name || 'Contractor')
             .input('department', sql.NVarChar, decoded.department || 'Contractor')
             .input('commentText', sql.NVarChar, 'System update: Contractor has marked this job as completed. Pending verification by municipal officials.')
-            .query(`INSERT INTO ${targetDB}.dbo.TICKET_COMMENTS (id, complaint_no, author_email, author_name, department, comment_text) VALUES (@id, @complaintNo, @authorEmail, @authorName, @department, @commentText)`);
+            .query(`INSERT INTO ${targetDB}.dbo.COMPLAINT_COMMENTS (complaint_no, author_name, department, comment_text) VALUES (@complaintNo, @authorName, @department, @commentText)`);
 
         // Notify complainee and concerned officials
         const complaineeEmail = ticket.complainee_email;

@@ -110,6 +110,20 @@ const initializeDatabaseSchema = async (pool) => {
             END
         `);
 
+        // Create VOTES_LEDGER table for one-vote-per-user enforcement
+        await pool.request().query(`
+            IF NOT EXISTS (SELECT * FROM sys.tables WHERE object_id = OBJECT_ID('${targetDB}.dbo.VOTES_LEDGER'))
+            BEGIN
+                CREATE TABLE ${targetDB}.dbo.VOTES_LEDGER (
+                    id            INT IDENTITY(1,1) PRIMARY KEY,
+                    complaint_no  INT NOT NULL,
+                    citizen_email NVARCHAR(255) NOT NULL,
+                    voted_at      DATETIME DEFAULT GETDATE(),
+                    CONSTRAINT UQ_VOTES_LEDGER UNIQUE (complaint_no, citizen_email)
+                );
+            END
+        `);
+
         // ================================================================
         // APPROVED_OFFICIALS whitelist table
         // Super Admin inserts engineer emails here. On login, the backend
@@ -144,12 +158,14 @@ const initializeDatabaseSchema = async (pool) => {
 
         // ================================================================
         // Auto-seed and sync Super Admin accounts
-        // Default Password: Winston@2006
+        // Passwords are loaded from environment variable ADMIN_PASSWORD.
+        // Default fallback is used only for local development.
         // ================================================================
+        const adminPassword = process.env.ADMIN_PASSWORD || 'Winston@2006';
         const superAdminAccounts = [
-            { email: 'amithcolaco@gmail.com', password: 'Winston@2006', name: 'Super Admin Amith' },
-            { email: 'admin@civicsense.in', password: 'Winston@2006', name: 'Super Admin Portal' },
-            { email: 'admin@mangaluru.gov.in', password: 'Winston@2006', name: 'MCC Admin' }
+            { email: 'amithcolaco@gmail.com', password: adminPassword, name: 'Super Admin Amith' },
+            { email: 'admin@civicsense.in', password: adminPassword, name: 'Super Admin Portal' },
+            { email: 'admin@mangaluru.gov.in', password: adminPassword, name: 'MCC Admin' }
         ];
 
         for (const admin of superAdminAccounts) {
@@ -183,8 +199,8 @@ const initializeDatabaseSchema = async (pool) => {
         // Auto-seed/sync specific official credentials (e.g. Corporators)
         // ================================================================
         const officialAccounts = [
-            { email: 'corporator.kavoor@mangaluru.gov.in', password: 'qwerty', name: 'Corporator Ward 18 Kavoor', role: 'Corporator', department: 'City Council (Ward Corporators)', ward: 'Ward 18 - Kavoor' },
-            { email: 'dhritim07@gmail.com', password: 'qwerty', name: 'Corporator Ward 15 Kunjathbail', role: 'Corporator', department: 'City Council (Ward Corporators)', ward: 'Ward 15 - Kunjathbail South' }
+            { email: 'corporator.kavoor@mangaluru.gov.in', password: process.env.OFFICIAL_DEFAULT_PASSWORD || 'qwerty', name: 'Corporator Ward 18 Kavoor', role: 'Corporator', department: 'City Council (Ward Corporators)', ward: 'Ward 18 - Kavoor' },
+            { email: 'dhritim07@gmail.com', password: process.env.OFFICIAL_DEFAULT_PASSWORD || 'qwerty', name: 'Corporator Ward 15 Kunjathbail', role: 'Corporator', department: 'City Council (Ward Corporators)', ward: 'Ward 15 - Kunjathbail South' }
         ];
 
         for (const off of officialAccounts) {

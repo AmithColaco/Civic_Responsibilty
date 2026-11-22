@@ -95,7 +95,7 @@ const Home = () => {
         </div>
         <div className="header-right-zone">
           <div className="brand-badge-info">
-            <span className="pulse-indicator"></span> Mangaluru live feed
+            <span className="pulse-indicator"></span> Live
           </div>
         </div>
       </header>
@@ -105,15 +105,15 @@ const Home = () => {
         <aside className={`side-column left-column ${isRegisteredOpen ? 'is-open' : 'is-collapsed'}`}>
           <div className="column-header" onClick={() => setIsRegisteredOpen(!isRegisteredOpen)}>
             <div className="header-title-row">
-              <h2>Registered Complaints</h2>
-              <span className="badge pending-count">{pendingComplaints.length} Open</span>
+              <h2>Open Issues</h2>
+              <span className="badge pending-count">{pendingComplaints.length} open</span>
             </div>
           </div>
 
           <div className="search-bar-container">
             <input
               type="text"
-              placeholder="Search active complaints..."
+              placeholder="Search open issues…"
               value={pendingSearch}
               onChange={(e) => setPendingSearch(e.target.value)}
               className="feed-search-input"
@@ -148,7 +148,7 @@ const Home = () => {
               minHeight: '220px'
             }}>
               <h3 style={{ fontSize: '1.05rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '12px', marginTop: 0, fontFamily: 'Inter, sans-serif', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                Live Grievance Map Telemetry
+                Issues on the Map
               </h3>
               <CityHeatmap points={complaints} />
             </div>
@@ -163,8 +163,8 @@ const Home = () => {
         <aside className={`side-column right-column ${isResolvedOpen ? 'is-open' : 'is-collapsed'}`}>
           <div className="column-header" onClick={() => setIsResolvedOpen(!isResolvedOpen)}>
             <div className="header-title-row">
-              <h2>Resolved Complaints</h2>
-              <span className="badge resolved-count">{resolvedComplaints.length} Fixed</span>
+              <h2>Fixed Issues</h2>
+              <span className="badge resolved-count">{resolvedComplaints.length} fixed</span>
             </div>
             <span className="collapse-arrow">{isResolvedOpen ? '▼' : '▲'}</span>
           </div>
@@ -172,7 +172,7 @@ const Home = () => {
           <div className="search-bar-container">
             <input
               type="text"
-              placeholder="Search resolved complaints..."
+              placeholder="Search fixed issues…"
               value={resolvedSearch}
               onChange={(e) => setResolvedSearch(e.target.value)}
               className="feed-search-input"

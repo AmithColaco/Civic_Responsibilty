@@ -93,6 +93,17 @@ function verifyComplaintIntegrity(complaintId, currentPayloadData) {
   const latestBlock = blocks[blocks.length - 1];
   const computedHash = crypto.createHash('sha256').update(JSON.stringify(currentPayloadData)).digest('hex');
 
+  if (computedHash !== latestBlock.dataHash) {
+    return {
+      verified: false,
+      blockIndex: latestBlock.index,
+      txHash: latestBlock.blockHash,
+      recordedHash: latestBlock.dataHash,
+      computedHash: computedHash,
+      message: `Data integrity check failed at Block #${latestBlock.index}: recorded hash does not match current payload.`
+    };
+  }
+
   return {
     verified: true,
     blockIndex: latestBlock.index,

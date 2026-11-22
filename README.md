@@ -530,14 +530,17 @@ SMTP_FROM="CivicSense Notifications" <noreply@civicsense.mangaluru.in>
 
 ## 👥 Default Accounts (Auto-Seeded)
 
-For testing and local demonstration, the database auto-seeds:
+For testing and local demonstration, the database auto-seeds accounts at startup.
 
-| Account Type | Email | Password | Assigned Scope |
-| :--- | :--- | :--- | :--- |
-| **Super Admin** | `amithcolaco@gmail.com` | `Winston@2006` | Global Administration & Whitelisting |
-| **Super Admin Portal** | `admin@civicsense.in` | `Winston@2006` | Global Administration |
-| **MCC Admin** | `admin@mangaluru.gov.in` | `Winston@2006` | City Municipal Oversight |
-| **Corporator (Ward 18)** | `corporator.kavoor@mangaluru.gov.in` | `qwerty` | Ward 18 - Kavoor |
+> [!CAUTION]
+> **Never commit real passwords to version control.** The seed passwords are controlled by `ADMIN_PASSWORD` and `OFFICIAL_DEFAULT_PASSWORD` in your `.env` file. See `.env.example` for the full list of variables.
+
+| Account Type | Email | Assigned Scope |
+| :--- | :--- | :--- |
+| **Super Admin** | `amithcolaco@gmail.com` | Global Administration & Whitelisting |
+| **Super Admin Portal** | `admin@civicsense.in` | Global Administration |
+| **MCC Admin** | `admin@mangaluru.gov.in` | City Municipal Oversight |
+| **Corporator (Ward 18)** | `corporator.kavoor@mangaluru.gov.in` | Ward 18 - Kavoor |
 
 ---
 

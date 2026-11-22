@@ -5,18 +5,18 @@ import '../pages/home.css';
 const WelcomeCard = () => {
   return (
     <div className="civic-card">
-      <div className="civic-tag">CITIZEN GRIEVANCE PORTAL</div>
+      <div className="civic-tag">Mangaluru, Karnataka</div>
       <h1 className="civic-title">CivicSense</h1>
       <p className="civic-subtitle">
-        Bridging the gap between citizens and municipal administration. Report issues instantly, skip the red tape, and track verified community updates.
+        Report a local issue in under a minute. We route it to the right team and keep you updated until it's fixed.
       </p>
 
       <div className="button-group">
-        <Link to="/register" className="btn-nav btn-reg">
-          Register Profile
+        <Link to="/register" className="btn-nav btn-reg btn-report-primary">
+          Get started — it's free
         </Link>
         <Link to="/login" className="btn-nav btn-log">
-          Login to Dashboard
+          Sign in
         </Link>
       </div>
     </div>

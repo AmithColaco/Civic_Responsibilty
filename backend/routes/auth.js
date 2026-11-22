@@ -5,19 +5,6 @@ const jwt = require('jsonwebtoken');
 const sql = require('mssql');
 const { poolPromise } = require('../db');
 
-// Database configuration bridge pulling from your safe .env parameters
-const dbConfig = {
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  server: process.env.DB_SERVER,     // This will now look for 'localhost'
-  database: process.env.DB_NAME,
-  options: {
-    instanceName: process.env.DB_INSTANCE, // Crucial for SQLEXPRESS setups!
-    encrypt: true,
-    trustServerCertificate: true
-  }
-};
-
 const { sendMail } = require('../utils/emailHelper');
 
 const dispatchInvitationEmail = (email, role, department, wardAssignment) => {
@@ -31,7 +18,7 @@ Your credentials have been validated with the following privileges:
   - Ward Assignment: ${wardAssignment}
 
 Please use your email address (${email.trim()}) to register or log in at:
-  http://localhost:5173/register
+  ${process.env.APP_BASE_URL || 'http://localhost:5173'}/register
 
 Once registered, your dashboard will automatically unlock your department tracking queue and administrative workflows.
 
@@ -83,7 +70,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'Security Alert: Password must be at least 6 characters long.' });
     }
     
-    const pool = await sql.connect(dbConfig);
+    const pool = await poolPromise;
 
     // Check if the user email already exists in our database matrix
     const userCheck = await pool.request()

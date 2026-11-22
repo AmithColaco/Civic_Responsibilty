@@ -61,27 +61,27 @@ const ComplaintCard = ({ complaint, theme }) => {
         level: 2,
         officer: 'Chief Engineer / Super Admin',
         color: '#dc2626',
-        bg: 'rgba(220, 38, 38, 0.12)',
-        border: 'rgba(220, 38, 38, 0.35)',
-        label: `🚨 ESCALATED TO CHIEF ENGINEER (${daysOpen}d INACTION)`
+        bg: 'rgba(220, 38, 38, 0.10)',
+        border: 'rgba(220, 38, 38, 0.30)',
+        label: `Urgent — Waiting over ${daysOpen} days`
       };
     } else if (daysOpen >= 10) {
       return {
         level: 1,
-        officer: 'Assistant Executive Engineer (AEE)',
+        officer: 'Assistant Executive Engineer',
         color: '#ea580c',
-        bg: 'rgba(234, 88, 12, 0.12)',
-        border: 'rgba(234, 88, 12, 0.35)',
-        label: `⚠️ ESCALATED TO AEE (${daysOpen}d INACTION)`
+        bg: 'rgba(234, 88, 12, 0.10)',
+        border: 'rgba(234, 88, 12, 0.30)',
+        label: `Overdue — Sent to a senior officer`
       };
     }
     return {
       level: 0,
-      officer: 'Junior Engineer (JE)',
+      officer: 'Engineer',
       color: '#2563eb',
-      bg: 'rgba(37, 99, 235, 0.08)',
-      border: 'rgba(37, 99, 235, 0.25)',
-      label: `Officer Assigned: Junior Engineer (JE)`
+      bg: 'rgba(37, 99, 235, 0.07)',
+      border: 'rgba(37, 99, 235, 0.20)',
+      label: `Being handled by an engineer`
     };
   };
 
@@ -147,7 +147,7 @@ const ComplaintCard = ({ complaint, theme }) => {
             )}
             {complaint.is_potential_duplicate && (
               <span className="potential-duplicate-badge" style={{ fontSize: '11px', background: 'rgba(234, 88, 12, 0.1)', color: '#ea580c', padding: '2px 8px', borderRadius: '4px', fontWeight: '600' }}>
-                Potential Duplicate
+                Similar issue already reported
               </span>
             )}
             {complaint.merged_into_id && (
@@ -158,7 +158,7 @@ const ComplaintCard = ({ complaint, theme }) => {
           </div>
         )}
 
-        {/* 3. Departmental Escalation Hierarchy Banner (10-Day Inaction SLA) */}
+        {/* Departmental Escalation Hierarchy Banner (10-Day Inaction SLA) */}
         {escalation && (
           <div className="escalation-hierarchy-banner" style={{
             marginTop: '10px',
@@ -171,32 +171,11 @@ const ComplaintCard = ({ complaint, theme }) => {
             fontWeight: '700',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '4px'
+            gap: '6px',
           }}>
             <span>{escalation.label}</span>
-            <span style={{ fontSize: '10px', opacity: 0.9, fontStyle: 'italic' }}>Officer: {escalation.officer}</span>
           </div>
         )}
-
-        {/* 4. Hybrid Blockchain Cryptographic Audit Trail Badge */}
-        <div className="blockchain-audit-badge" style={{
-          marginTop: '10px',
-          padding: '5px 10px',
-          borderRadius: '6px',
-          background: 'rgba(99, 102, 241, 0.08)',
-          border: '1px solid rgba(99, 102, 241, 0.25)',
-          color: '#6366f1',
-          fontSize: '10px',
-          fontWeight: '700',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
-          <span>⛓️ SHA-256 Blockchain Audit Proof</span>
-          <span style={{ fontSize: '9px', opacity: 0.85, fontFamily: 'monospace' }}>Verified Ledger</span>
-        </div>
       </div>
 
     </div>

@@ -72,7 +72,7 @@ const Register = () => {
       }, 2000);
 
     } catch (err) {
-      setToast({ message: err.message || 'Backend server connection timeout.', type: 'error' });
+      setToast({ message: err.message || "Couldn't connect. Please try again in a moment.", type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -92,7 +92,7 @@ const Register = () => {
           <Link to="/" className="auth-logo-link">
             <h1 className="auth-logo">CivicSense</h1>
           </Link>
-          <p className="auth-subtitle">Create an account to report and track neighborhood civic grievances</p>
+          <p className="auth-subtitle">Join CivicSense to report issues and track fixes in your neighbourhood</p>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
@@ -165,13 +165,13 @@ const Register = () => {
           </div>
 
           <button type="submit" className="auth-submit-btn" disabled={loading}>
-            {loading ? 'Creating Account...' : 'Register'}
+            {loading ? 'Creating account…' : 'Create account'}
           </button>
         </form>
 
         <div className="auth-footer-redirect">
           <span>Already have an account? </span>
-          <Link to="/login" className="auth-redirect-link">Login here</Link>
+          <Link to="/login" className="auth-redirect-link">Sign in</Link>
         </div>
       </div>
     </div>

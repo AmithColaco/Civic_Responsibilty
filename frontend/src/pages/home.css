@@ -17,13 +17,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 28px;
-  background: #ffffff;
+  padding: 14px 28px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--card-border);
   position: sticky;
   top: 0;
   z-index: 1000;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 1px 0 var(--card-border), var(--shadow-xs);
   flex-shrink: 0;
 }
 
@@ -179,11 +181,12 @@
   font-size: 0.85rem;
   outline: none;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
 }
 
 .feed-search-input:focus {
   border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  box-shadow: 0 0 0 3px var(--brand-primary-ring, rgba(79, 70, 229, 0.12));
   background: #ffffff;
 }
 
@@ -221,62 +224,83 @@
 
 /* 5. WELCOME CARD (WelcomeCard) */
 .civic-card {
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-  padding: 3rem 2.5rem;
+  background: linear-gradient(145deg, #ffffff 0%, #f8faff 100%);
+  padding: 2.8rem 2.5rem 2.4rem;
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-sm), 0 0 0 1px rgba(99,102,241,0.06);
   border: 1px solid var(--card-border);
   text-align: center;
   width: 100%;
   box-sizing: border-box;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: box-shadow var(--transition-base);
   position: relative;
   overflow: hidden;
 }
 
+/* Gradient top bar */
+.civic-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--brand-gradient);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
 .civic-card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: #cbd5e1;
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(99,102,241,0.08);
 }
 
 .civic-tag {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--brand-primary);
-  letter-spacing: 0.12em;
-  background: rgba(79, 70, 229, 0.06);
-  padding: 6px 16px;
-  border-radius: 9999px;
-  margin-bottom: 18px;
+  letter-spacing: 0.08em;
+  background: var(--brand-primary-soft);
+  padding: 5px 14px;
+  border-radius: var(--radius-full);
+  margin-bottom: 16px;
   text-transform: uppercase;
 }
 
+.civic-tag::before {
+  content: "📍";
+  font-size: 0.75rem;
+}
+
 .civic-title {
-  font-size: 2.8rem;
+  font-size: 2.6rem;
   font-weight: 800;
-  color: var(--text-main);
-  letter-spacing: -0.03em;
-  margin: 0 0 12px 0;
+  letter-spacing: -0.04em;
+  margin: 0 0 10px 0;
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .civic-subtitle {
-  font-size: 0.98rem;
+  font-size: 0.95rem;
   font-weight: 400;
   color: var(--text-muted);
-  line-height: 1.6;
-  max-width: 580px;
-  margin: 0 auto 2.2rem auto;
+  line-height: 1.65;
+  max-width: 520px;
+  margin: 0 auto 2rem;
 }
 
 .button-group {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   justify-content: center;
-  max-width: 520px;
+  max-width: 440px;
   margin: 0 auto;
-  z-index: 10;
   position: relative;
+  z-index: 10;
 }
 
 .btn-nav {
@@ -286,7 +310,7 @@
   border: 1px solid var(--card-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-base);
   width: 100%;
   text-decoration: none;
   display: flex;
@@ -294,7 +318,7 @@
   justify-content: center;
   gap: 8px;
   box-sizing: border-box;
-  background-color: #ffffff;
+  background: var(--card-bg);
   color: var(--text-main);
   box-shadow: var(--shadow-sm);
 }
@@ -303,37 +327,30 @@
   background: var(--brand-gradient) !important;
   color: #ffffff !important;
   border: none !important;
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.2) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 4px 16px rgba(79,70,229,0.22) !important;
 }
-
 .btn-report-primary:hover {
   background: var(--brand-hover-gradient) !important;
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35) !important;
+  box-shadow: 0 4px 20px rgba(79,70,229,0.36) !important;
 }
+.btn-report-primary:active { transform: translateY(0); }
 
-.btn-report-primary:active {
-  transform: translateY(1px);
-}
-
-.btn-reg:hover,
-.btn-log:hover {
+.btn-reg:hover, .btn-log:hover {
   border-color: #cbd5e1;
-  background-color: #f8fafc;
+  background: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
-
-.btn-reg:active,
-.btn-log:active {
-  transform: scale(0.98);
-}
+.btn-reg:active, .btn-log:active { transform: scale(0.98); }
 
 .card-features-row {
   display: flex;
   justify-content: center;
   gap: 24px;
-  margin-top: 2rem;
+  margin-top: 1.8rem;
   border-top: 1px solid var(--divider);
-  padding-top: 20px;
+  padding-top: 18px;
 }
 
 .feature-item {
@@ -346,11 +363,11 @@
 
 .feature-dot {
   display: inline-block;
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background-color: var(--brand-primary);
-  margin-right: 8px;
+  background: var(--brand-primary);
+  margin-right: 7px;
 }
 
 /* 6. BEFORE/AFTER TIMELINE WINS */
@@ -634,25 +651,40 @@
 /* 8. LOADING SCREENS & EMTPY STATES */
 .empty-panel-message {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 8px;
   height: 120px;
   padding: 16px;
   text-align: center;
   color: var(--text-muted);
   font-size: 0.82rem;
-  border: 1px dashed var(--card-border);
+  border: 1px solid var(--card-border);
   border-radius: var(--radius-md);
-  background: rgba(0, 0, 0, 0.01);
+  background: rgba(248, 250, 252, 0.6);
 }
 
 .panel-loading {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 10px;
   height: 100px;
   color: var(--text-muted);
   font-size: 0.82rem;
+}
+
+.panel-loading::before {
+  content: "";
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--card-border);
+  border-top-color: var(--brand-primary);
+  border-radius: 50%;
+  animation: spinLoader 0.7s linear infinite;
+  flex-shrink: 0;
 }
 
 .collapse-arrow {

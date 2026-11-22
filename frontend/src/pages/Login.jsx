@@ -52,7 +52,7 @@ const Login = () => {
             localStorage.setItem('token', data.token);
 
             // 2. Trigger side-mounted confirmation toast alert
-            setToast({ message: 'Authentication successful! Loading dashboard...', type: 'success' });
+            setToast({ message: "You're in! Taking you to your dashboard...", type: 'success' });
 
             // 3. Gracefully slide into the dashboard control viewport
             setTimeout(() => {
@@ -81,7 +81,7 @@ const Login = () => {
                     <Link to="/" className="auth-logo-link">
                         <h1 className="auth-logo">CivicSense</h1>
                     </Link>
-                    <p className="auth-subtitle">Sign in to report new issues or manage your tracking dashboard</p>
+                    <p className="auth-subtitle">Welcome back — sign in to report or track issues in your area</p>
                 </div>
 
                 <form className="auth-form" onSubmit={handleSubmit}>
@@ -112,13 +112,13 @@ const Login = () => {
                     </div>
 
                     <button type="submit" className="auth-submit-btn" disabled={loading}>
-                        {loading ? 'Authenticating...' : 'Login'}
+                        {loading ? 'Signing in…' : 'Sign in'}
                     </button>
                 </form>
 
                 <div className="auth-footer-redirect">
                     <span>Don't have an account yet? </span>
-                    <Link to="/register" className="auth-redirect-link">Register here</Link>
+                    <Link to="/register" className="auth-redirect-link">Create an account</Link>
                 </div>
             </div>
         </div>

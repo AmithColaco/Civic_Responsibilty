@@ -24,7 +24,18 @@ console.log('✅ Environment validation passed');
 
 // 1. Cyber Security: Helmet HTTP Hardening
 app.use(helmet({
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://*.tile.openstreetmap.org'],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
   crossOriginResourcePolicy: { policy: 'cross-origin' },
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
 }));
@@ -46,8 +57,16 @@ const apiLimiter = rateLimit({
 });
 
 // 3. Cyber Security: CORS Policy
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : ['http://localhost:5173'];
+
 app.use(cors({
-  origin: true,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. curl, mobile apps, same-origin)
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: Origin '${origin}' not allowed.`));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -98,6 +117,8 @@ app.use((req, res, next) => {
       const sanitized = checkSecurity(req.query[key], key);
       if (sanitized === 'BLOCKED_PATH_TRAVERSAL' || sanitized === 'BLOCKED_SQL_INJECTION') {
         threatDetected = true;
+      } else {
+        req.query[key] = sanitized;
       }
     }
   }
@@ -145,6 +166,11 @@ app.get('/api/public/complaints', apiLimiter, async (req, res) => {
     console.error('Failed to fetch public complaints:', err);
     res.json([]);
   }
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime() });
 });
 
 // Global Fallback Error Handler - prevents stack trace and sensitive internal leaks

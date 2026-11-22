@@ -17,7 +17,7 @@ const Toast = ({ message, type, onClose }) => {
         <div className={`toast-notification-box ${type === 'success' ? 'toast-success' : 'toast-error'}`}>
             <div className="toast-content-body">
                 <p className="toast-message-text">{message}</p>
-                <button className="toast-dismiss-btn" onClick={onClose}>x</button>
+                <button className="toast-dismiss-btn" onClick={onClose} aria-label="Dismiss">×</button>
             </div>
             {/* The animated horizontal progress countdown bar */}
             <div className="toast-progress-bar-container">

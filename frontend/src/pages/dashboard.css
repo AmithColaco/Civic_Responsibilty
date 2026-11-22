@@ -14,14 +14,16 @@
 }
 
 .dashboard-brand-header {
-  padding: 16px 24px;
+  padding: 14px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
   border-bottom: 1px solid var(--card-border);
-  background-color: #ffffff;
-  box-shadow: var(--shadow-sm);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 1px 0 var(--card-border), var(--shadow-xs);
 }
 
 .dashboard-main-logo {
@@ -72,6 +74,8 @@
 
 .dashboard-nav-tab-btn:hover {
   color: var(--brand-primary);
+  background: rgba(79, 70, 229, 0.04);
+  border-radius: var(--radius-xs);
 }
 
 .dashboard-nav-tab-btn.active-tab {
@@ -138,12 +142,14 @@
   background-color: var(--card-bg, #ffffff);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-xl);
   padding: 8px 0;
   display: none;
   flex-direction: column;
   z-index: 500000;
-  margin-top: 4px;
+  margin-top: 8px;
+  animation: scaleIn 0.15s var(--ease-out);
+  transform-origin: top right;
 }
 
 .dashboard-profile-hover-trigger:hover .dashboard-profile-dropdown-menu {
@@ -547,12 +553,13 @@
 
 .tracking-status-fallback {
   text-align: center;
-  padding: 3rem;
+  padding: 3rem 2rem;
   background-color: var(--card-bg);
-  border: 1px dashed var(--card-border);
+  border: 1px solid var(--card-border);
   border-radius: var(--radius-md);
   color: var(--text-muted);
   font-size: 0.88rem;
+  box-shadow: var(--shadow-xs);
 }
 
 .empty-ledger span {
@@ -577,6 +584,12 @@
   gap: 12px;
   box-shadow: var(--shadow-sm);
   animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: box-shadow var(--transition-base), border-color var(--transition-base), transform var(--transition-base);
+}
+
+.tracking-ticket-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: #cbd5e1;
 }
 
 .interactive-clickable-card {
@@ -777,9 +790,21 @@
   width: 100%;
   max-width: 440px;
   text-align: center;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-xl);
   box-sizing: border-box;
   animation: modalScaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Gradient top bar on success modal */
+.success-modal-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--brand-gradient);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 @keyframes modalScaleIn {
@@ -796,7 +821,7 @@
 .success-modal-icon {
   width: 56px;
   height: 56px;
-  background-color: rgba(79, 70, 229, 0.08);
+  background: linear-gradient(135deg, rgba(79,70,229,0.1), rgba(99,102,241,0.15));
   color: var(--brand-primary);
   border-radius: 50%;
   font-size: 1.8rem;
@@ -804,6 +829,7 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto 1.25rem auto;
+  border: 1px solid rgba(79,70,229,0.15);
 }
 
 .success-modal-card h2 {
@@ -1647,14 +1673,19 @@ input[type="file"]::file-selector-button:active {
 }
 
 .dept-comment-bubble {
-  background-color: #f8fafc;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   border: 1px solid var(--card-border);
   border-left: 3px solid var(--brand-primary);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  padding: 10px 14px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  transition: border-left-color var(--transition-fast);
+}
+
+.dept-comment-bubble:hover {
+  border-left-color: var(--brand-primary-hover);
 }
 
 .dept-comment-meta {
@@ -1855,6 +1886,18 @@ input[type="file"]::file-selector-button:active {
   border-radius: 12px;
   padding: 24px;
   box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-invite-card::before,
+.admin-officials-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  border-radius: 12px 12px 0 0;
 }
 
 .admin-card-title {
@@ -2013,7 +2056,10 @@ input[type="file"]::file-selector-button:active {
 }
 
 .admin-officials-table thead {
-  background: #f9fafb;
+  background: linear-gradient(to right, #f8fafc, #f1f5f9);
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .admin-officials-table th {
@@ -2038,7 +2084,7 @@ input[type="file"]::file-selector-button:active {
 }
 
 .admin-official-row:hover {
-  background: #fafafa;
+  background: rgba(79, 70, 229, 0.03);
 }
 
 .admin-officials-table td {

@@ -18,7 +18,11 @@ uploads/
 dist/
 dist-ssr/
 build/
+frontend/dist/
 *.local
+
+# Blockchain ledger (runtime data — not source code)
+backend/blockchain_ledger.json
 
 # Logs
 logs/
@@ -47,3 +51,4 @@ lerna-debug.log*
 .Trashes
 ehthumbs.db
 Thumbs.db
+

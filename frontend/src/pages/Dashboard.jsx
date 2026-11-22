@@ -144,9 +144,9 @@ const Dashboard = () => {
     const [mappedDepartment, setMappedDepartment] = useState('');
 
     const acquireLocation = () => {
-        setCoordsStatus('Acquiring location telemetry...');
+        setCoordsStatus('Getting your location…');
         if (!navigator.geolocation) {
-            setCoordsStatus('Geolocation is not supported by your browser.');
+            setCoordsStatus('Location access is not supported by your browser.');
             return;
         }
         navigator.geolocation.getCurrentPosition(
@@ -155,11 +155,11 @@ const Dashboard = () => {
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude
                 });
-                setCoordsStatus(`Location acquired: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`);
+                setCoordsStatus('📍 Location found');
             },
             (error) => {
                 console.error(error);
-                setCoordsStatus(`Location access denied: ${error.message}`);
+                setCoordsStatus("Couldn't get your location. Please allow location access and try again.");
             },
             { enableHighAccuracy: true, timeout: 10000 }
         );
@@ -824,19 +824,19 @@ const Dashboard = () => {
                             className={`dashboard-nav-tab-btn ${activeTab === 'track' ? 'active-tab' : ''}`}
                             onClick={() => setActiveTab('track')}
                         >
-                            Track Grievance
+                            My Reports
                         </button>
                         <button
                             className={`dashboard-nav-tab-btn ${activeTab === 'view' ? 'active-tab' : ''}`}
                             onClick={() => setActiveTab('view')}
                         >
-                            View Grievances
+                            All Issues
                         </button>
                         <button
                             className={`dashboard-nav-tab-btn admin-tab-btn ${activeTab === 'admin-panel' ? 'active-tab' : ''}`}
                             onClick={() => setActiveTab('admin-panel')}
                         >
-                            Admin Panel
+                            Admin
                         </button>
                     </div>
                 ) : (userProfile.role !== 'citizen' && userProfile.role !== 'super_admin') ? (
@@ -879,19 +879,19 @@ const Dashboard = () => {
                             className={`dashboard-nav-tab-btn ${activeTab === 'file' ? 'active-tab' : ''}`}
                             onClick={() => setActiveTab('file')}
                         >
-                            File Grievance
+                            Report an Issue
                         </button>
                         <button
                             className={`dashboard-nav-tab-btn ${activeTab === 'track' ? 'active-tab' : ''}`}
                             onClick={() => setActiveTab('track')}
                         >
-                            Track Grievance
+                            My Reports
                         </button>
                         <button
                             className={`dashboard-nav-tab-btn ${activeTab === 'view' ? 'active-tab' : ''}`}
                             onClick={() => setActiveTab('view')}
                         >
-                            View Grievances
+                            All Issues
                         </button>
                     </div>
                 )}
@@ -939,7 +939,7 @@ const Dashboard = () => {
                     <div className="dashboard-form-container-card">
                         <div className="form-card-header">
                             <h2>Lodge a Public Complaint</h2>
-                            <p>Submit precise field telemetry below to dispatch local municipal emergency vectors.</p>
+                            <p>Fill in the details below to report an issue in your area.</p>
                         </div>
 
                         <form className="grievance-submission-form" onSubmit={async (e) => {
@@ -1084,14 +1084,14 @@ const Dashboard = () => {
                                     />
                                     <label htmlFor="mediaAttachment" className="custom-upload-trigger-label">
                                         <span>Click to upload a photo of the civic issue</span>
-                                        <span className="upload-constraints-caption">JPEG, PNG required for AI classification · Max 25MB</span>
+                                        <span className="upload-constraints-caption">JPEG or PNG photo · Max 25 MB</span>
                                     </label>
                                 </div>
 
                                 {selectedFiles.length > 0 && (
                                     <div className="media-preview-deck-container">
                                         <div className="preview-deck-header">
-                                            <span>Staged Attachments ({selectedFiles.length})</span>
+                                            <span>Photos added ({selectedFiles.length})</span>
                                             <button
                                                 type="button"
                                                 className="clear-deck-btn"
@@ -1149,7 +1149,7 @@ const Dashboard = () => {
                                 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                                         <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '700', color: 'var(--brand-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                            CivicSense AI Model Problem Summary
+                                            AI Photo Summary
                                         </h4>
                                         {!aiAnalysisResult && !aiAnalysisLoading && (
                                             <button
@@ -1177,7 +1177,7 @@ const Dashboard = () => {
 
                                     {aiAnalysisLoading && (
                                         <div style={{ margin: '12px 0', fontSize: '0.85rem', color: 'var(--brand-primary)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span className="spinner-loader">⏳</span> Processing image with Gemini AI vision model...
+                                            <span className="spinner-loader">⏳</span> Analyzing your photo…
                                         </div>
                                     )}
 
@@ -1197,20 +1197,20 @@ const Dashboard = () => {
 
                                             <div style={{ background: 'var(--card-bg)', padding: '12px 14px', borderRadius: '8px', border: '1px solid var(--card-border)', marginBottom: '12px' }}>
                                                 <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-main)', lineHeight: '1.5' }}>
-                                                    <strong>AI Generated Problem Summary:</strong> "{aiAnalysisResult.description}"
+                                                    <strong>What the AI saw:</strong> "{aiAnalysisResult.description}"
                                                 </p>
                                             </div>
 
                                             {aiSummaryStatus === 'accepted' && (
                                                 <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(34,197,94,0.12)', color: '#15803d', fontSize: '0.82rem', fontWeight: '700', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <span> AI Problem Summary Accepted & Applied to Complaint</span>
+                                                    <span> AI summary applied to your report</span>
                                                     <button type="button" onClick={() => { setAiSummaryStatus(null); setShowRejectionInput(false); }} style={{ background: 'none', border: 'none', color: '#15803d', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.78rem' }}>Change Choice</button>
                                                 </div>
                                             )}
 
                                             {aiSummaryStatus === 'rejected' && !showRejectionInput && (
                                                 <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(239,68,68,0.12)', color: '#b91c1c', fontSize: '0.82rem', fontWeight: '700', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <span> AI Summary Rejected (Using Custom Description & Category)</span>
+                                                    <span> AI summary not used — you'll describe it yourself</span>
                                                     <button type="button" onClick={() => { setAiSummaryStatus(null); setShowRejectionInput(true); }} style={{ background: 'none', border: 'none', color: '#b91c1c', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.78rem' }}>Provide Feedback to AI</button>
                                                 </div>
                                             )}
@@ -1236,7 +1236,7 @@ const Dashboard = () => {
                                                                 if (img) runAIImageAnalysis(img.fileObject, rejectionFeedbackText, aiAnalysisResult.description);
                                                             }}
                                                         >
-                                                            Regenerate Refined AI Summary
+                                                            Try again with my feedback
                                                         </button>
                                                         <button
                                                             type="button"
@@ -1246,7 +1246,7 @@ const Dashboard = () => {
                                                                 setShowRejectionInput(false);
                                                             }}
                                                         >
-                                                            Skip & Enter Manually
+                                                            Skip — I'll describe it myself
                                                         </button>
                                                     </div>
                                                 </div>
@@ -1275,7 +1275,7 @@ const Dashboard = () => {
                                                             setCustomDescriptionText(aiAnalysisResult.description);
                                                         }}
                                                     >
-                                                        Accept AI Summary
+                                                        Use AI summary
                                                     </button>
                                                     <button
                                                         type="button"
@@ -1295,7 +1295,7 @@ const Dashboard = () => {
                                                             setShowRejectionInput(true);
                                                         }}
                                                     >
-                                                        ❌ Reject AI Summary
+                                                        That's not right — I'll describe it myself
                                                     </button>
                                                 </div>
                                             )}
@@ -1495,7 +1495,7 @@ const Dashboard = () => {
                                                     <p className="duplicate-candidate-desc">{ticket.description}</p>
                                                     <div className="duplicate-candidate-footer">
                                                         <span>Category: {ticket.department}</span>
-                                                        <span>{ticket.vote_score || 0} backers</span>
+                                                        <span>{ticket.vote_score || 0} supported this</span>
                                                     </div>
                                                     <div className="duplicate-candidate-actions">
                                                         <button
@@ -1503,7 +1503,7 @@ const Dashboard = () => {
                                                             className="duplicate-back-btn"
                                                             onClick={() => handleBackDuplicate(ticket.complaint_no)}
                                                         >
-                                                            Yes, Same Issue — Back It (+1 Upvote)
+                                                            Yes, same issue — add my support
                                                         </button>
                                                     </div>
                                                 </div>
@@ -1532,7 +1532,7 @@ const Dashboard = () => {
                                         submitStagedGrievance(true, parentId);
                                     }}
                                 >
-                                    Reject All — Lodge New Ticket
+                                    No, it's different — submit as new
                                 </button>
                             </div>
                         </div>
@@ -1543,14 +1543,14 @@ const Dashboard = () => {
                     <div className="dashboard-tracking-container">
                         <div className="tracking-view-header">
                             <h2>Track Your Active Grievances</h2>
-                            <p>Monitor live workflow routing and response status tokens assigned by municipal vectors.</p>
+                            <p>See the latest updates on your reported issues.</p>
                         </div>
 
                         {loadingTrack ? (
-                            <div className="tracking-status-fallback">Synchronizing live ledger pipelines...</div>
+                            <div className="tracking-status-fallback">Loading your reports…</div>
                         ) : myGrievances.length === 0 ? (
                             <div className="tracking-status-fallback empty-ledger">
-                                <p>No grievances found under your profile identity hash.</p>
+                                <p>You haven't reported any issues yet.</p>
                             </div>
                         ) : (
                             <div className="tracking-logs-grid">
@@ -1567,13 +1567,13 @@ const Dashboard = () => {
                                                     {ticket.status || 'Pending'}
                                                 </span>
                                                 {ticket.is_potential_duplicate && (
-                                                    <span className="potential-duplicate-badge">Duplicate Review</span>
+                                                    <span className="potential-duplicate-badge">Similar to another report</span>
                                                 )}
                                                 {ticket.merged_into_id && (
                                                     <span className="merged-badge">Merged</span>
                                                 )}
                                             </div>
-                                            <span className="card-upvote-preview-count">{ticket.vote_score || 0} backers</span>
+                                            <span className="card-upvote-preview-count">{ticket.vote_score || 0} supported this</span>
                                         </div>
 
                                         <h3 className="ticket-department-title">{ticket.department}</h3>
@@ -1607,14 +1607,14 @@ const Dashboard = () => {
                     <div className="dashboard-tracking-container">
                         <div className="tracking-view-header">
                             <h2>Public Grievance Map & Feed</h2>
-                            <p>Review community-logged concerns and maintenance telemetry deployed across city zones.</p>
+                            <p>See all issues reported across the city.</p>
                         </div>
 
                         {loadingView ? (
-                            <div className="tracking-status-fallback">Synchronizing public ledger matrices...</div>
+                            <div className="tracking-status-fallback">Loading issues…</div>
                         ) : allGrievances.length === 0 ? (
                             <div className="tracking-status-fallback empty-ledger">
-                                <p>The community ledger is currently clear.</p>
+                                <p>No issues have been reported yet.</p>
                             </div>
                         ) : (
                             <div className="tracking-logs-grid">
@@ -1631,13 +1631,13 @@ const Dashboard = () => {
                                                     {ticket.status || 'Pending'}
                                                 </span>
                                                 {ticket.is_potential_duplicate && (
-                                                    <span className="potential-duplicate-badge">Duplicate Review</span>
+                                                    <span className="potential-duplicate-badge">Similar to another report</span>
                                                 )}
                                                 {ticket.merged_into_id && (
                                                     <span className="merged-badge">Merged</span>
                                                 )}
                                             </div>
-                                            <span className="card-upvote-preview-count">{ticket.vote_score || 0} backing</span>
+                                            <span className="card-upvote-preview-count">{ticket.vote_score || 0} supported this</span>
                                         </div>
 
                                         <h3 className="ticket-department-title">{ticket.department}</h3>
@@ -1658,7 +1658,7 @@ const Dashboard = () => {
                                                             <video src={url} controls className="feed-media-asset" />
                                                         ) : (
                                                             <a href={url} target="_blank" rel="noopener noreferrer">
-                                                                <img src={url} alt="Field Evidence" className="feed-media-asset" />
+                                                                <img src={url} alt="Photo of the issue" className="feed-media-asset" />
                                                             </a>
                                                         )}
                                                     </div>
@@ -1688,10 +1688,10 @@ const Dashboard = () => {
                     <div className="dashboard-tracking-container">
                         <div className="tracking-view-header">
                             <h2>
-                                {activeTab === 'dept-jobs' && 'Actionable Department Tickets'}
-                                {activeTab === 'dept-resolved' && 'Historical Resolutions Ledger'}
-                                {activeTab === 'contractor-jobs' && 'Assigned Actionable Jobs'}
-                                {activeTab === 'contractor-completed' && 'Completed/Historical Jobs'}
+                                {activeTab === 'dept-jobs' && 'Open Issues for Your Department'}
+                                {activeTab === 'dept-resolved' && 'Resolved Issues'}
+                                {activeTab === 'contractor-jobs' && 'Assigned Jobs'}
+                                {activeTab === 'contractor-completed' && 'Completed Jobs'}
                             </h2>
                             <p>
                                 {activeTab.startsWith('contractor')
@@ -1701,7 +1701,7 @@ const Dashboard = () => {
                         </div>
 
                         {loadingView ? (
-                            <div className="tracking-status-fallback">Synchronizing department ledger...</div>
+                            <div className="tracking-status-fallback">Loading…</div>
                         ) : allGrievances.filter(filterOfficialTicket).filter(t => {
                             const st = String(t.status || 'Pending').toLowerCase();
                             if (activeTab === 'contractor-jobs') {
@@ -1713,7 +1713,7 @@ const Dashboard = () => {
                             return activeTab === 'dept-jobs' ? st === 'pending' : (st === 'pending verification' || st === 'resolved');
                         }).length === 0 ? (
                             <div className="tracking-status-fallback empty-ledger">
-                                <p>No grievances found matching this status filter.</p>
+                                <p>Nothing here yet.</p>
                             </div>
                         ) : (
                             <div className="tracking-logs-grid">
@@ -1739,13 +1739,13 @@ const Dashboard = () => {
                                                     {ticket.status || 'Pending'}
                                                 </span>
                                                 {ticket.is_potential_duplicate && (
-                                                    <span className="potential-duplicate-badge">Duplicate Review</span>
+                                                    <span className="potential-duplicate-badge">Similar to another report</span>
                                                 )}
                                                 {ticket.merged_into_id && (
                                                     <span className="merged-badge">Merged</span>
                                                 )}
                                             </div>
-                                            <span className="card-upvote-preview-count">{ticket.vote_score || 0} Backers</span>
+                                            <span className="card-upvote-preview-count">{ticket.vote_score || 0} supported this</span>
                                         </div>
 
                                         <h3 className="ticket-department-title">{ticket.ward_number}</h3>
@@ -1777,7 +1777,7 @@ const Dashboard = () => {
                 {selectedTicket && (
                     <div className="success-modal-overlay" onClick={() => setSelectedTicket(null)}>
                         <div className="detailed-inspection-card" onClick={(e) => e.stopPropagation()}>
-                            <button className="modal-corner-close-x" onClick={() => setSelectedTicket(null)}>x</button>
+                            <button className="modal-corner-close-x" onClick={() => setSelectedTicket(null)} aria-label="Close">×</button>
 
                             <div className="inspection-card-header" style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
                                 <span className="ticket-id-badge">#CS-{selectedTicket.complaint_no}</span>
@@ -1785,7 +1785,7 @@ const Dashboard = () => {
                                     {selectedTicket.status || 'Pending'}
                                 </span>
                                 {selectedTicket.is_potential_duplicate && (
-                                    <span className="potential-duplicate-badge">Duplicate Review</span>
+                                    <span className="potential-duplicate-badge">Similar to another report</span>
                                 )}
                                 {selectedTicket.merged_into_id && (
                                     <span className="merged-badge">Merged</span>
@@ -1819,13 +1819,13 @@ const Dashboard = () => {
                                     </div>
                                 )}
                             </div>
-                            <p className="inspection-zone-sub" style={{ marginTop: '4px' }}>Target Zone Area: <strong>{selectedTicket.ward_number}</strong></p>
+                            <p className="inspection-zone-sub" style={{ marginTop: '4px' }}>Area: <strong>{selectedTicket.ward_number}</strong></p>
 
                             <hr className="dashboard-dropdown-divider" style={{ margin: '12px 0' }} />
 
                             <div className="inspection-scrollable-body">
                                 <div className="inspection-data-segment">
-                                    <h4>Detailed Structural Description</h4>
+                                    <h4>Description</h4>
                                     <p className="inspection-body-text-box">{selectedTicket.description}</p>
                                 </div>
 
@@ -1851,7 +1851,7 @@ const Dashboard = () => {
                                         </div>
                                     )}
                                     <div className="meta-grid-item">
-                                        <span className="meta-grid-label">Urgency Matrix</span>
+                                        <span className="meta-grid-label">Priority</span>
                                         <span className="meta-grid-value">{selectedTicket.severity || 'Low Priority'}</span>
                                     </div>
                                     <div className="meta-grid-item">
@@ -1860,7 +1860,7 @@ const Dashboard = () => {
                                     </div>
 
                                     <div className="meta-grid-item">
-                                        <span className="meta-grid-label">Community Endorsement</span>
+                                        <span className="meta-grid-label">People backing this</span>
                                         <span className="meta-grid-value">
                                             {(selectedTicket.vote_score || 0) + (backedTicketIds.includes(selectedTicket.complaint_no) ? 1 : 0)} Backers
                                         </span>
@@ -1970,17 +1970,17 @@ const Dashboard = () => {
                                                         });
                                                         const data = await res.json();
                                                         if (res.ok) {
-                                                            alert('Job marked as completed! Notification emails simulated to officials and citizen.');
+                                                            alert('Work marked as done! Officials and the citizen have been notified.');
                                                             const updater = item => item.complaint_no === selectedTicket.complaint_no ? { ...item, status: 'Pending Verification' } : item;
                                                             setAllGrievances(prev => prev.map(updater));
                                                             setMyGrievances(prev => prev.map(updater));
                                                             setSelectedTicket(null); // close inspection
                                                         } else {
-                                                            alert(data.error || 'Complete operation failed.');
+                                                            alert(data.error || 'Something went wrong. Please try again.');
                                                         }
                                                     } catch (err) {
                                                         console.error(err);
-                                                        alert('Network error while completing job.');
+                                                        alert('No connection. Please check your internet and try again.');
                                                     }
                                                 }}
                                             >
@@ -2330,7 +2330,7 @@ const Dashboard = () => {
                                     </div>
 
                                     {loadingOfficials ? (
-                                        <div className="admin-loading-state">Synchronizing whitelist records...</div>
+                                        <div className="admin-loading-state">Loading team members…</div>
                                     ) : officials.length === 0 ? (
                                         <div className="admin-empty-state">
                                             <p>No officials have been invited yet.</p>
@@ -2441,7 +2441,7 @@ const Dashboard = () => {
                                     <div className="admin-invite-card" style={{ marginBottom: '20px' }}>
                                         <h3 className="admin-card-title">Select Official / Contractor to Inspect Work Statistics</h3>
                                         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '14px' }}>
-                                            Choose any registered official or contractor to view their total assigned jobs, completion count, and detailed work ledger.
+                                            view their work history.
                                         </p>
 
                                         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -2486,7 +2486,7 @@ const Dashboard = () => {
 
                                             <div style={{ padding: '16px', borderRadius: '10px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', marginBottom: '20px' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                                    <span style={{ fontWeight: '700', fontSize: '0.9rem' }}>Work Resolution Efficiency</span>
+                                                    <span style={{ fontWeight: '700', fontSize: '0.9rem' }}>Completion Rate</span>
                                                     <span style={{ fontWeight: '800', fontSize: '1rem', color: '#16a34a' }}>{completionRate}%</span>
                                                 </div>
                                                 <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.1)', borderRadius: '5px', overflow: 'hidden' }}>
@@ -2497,7 +2497,7 @@ const Dashboard = () => {
                                             <div className="admin-officials-card">
                                                 <h3 className="admin-card-title">Assigned Grievance Work History for {selectedOfficialEmail}</h3>
                                                 {officialTickets.length === 0 ? (
-                                                    <div className="admin-empty-state">No grievances currently logged under this official's jurisdiction or assignment.</div>
+                                                    <div className="admin-empty-state">No issues assigned to this person yet.</div>
                                                 ) : (
                                                     <div className="admin-officials-table-wrap">
                                                         <table className="admin-officials-table">
@@ -2590,9 +2590,9 @@ const Dashboard = () => {
                                     <div className="admin-invite-card" style={{ marginBottom: '20px' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
                                             <div>
-                                                <h3 className="admin-card-title" style={{ margin: 0 }}>Ward-wise Category Statistical Visualization</h3>
+                                                <h3 className="admin-card-title" style={{ margin: 0 }}>Issues by Area and Category</h3>
                                                 <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                                    Inspect category distribution, issue hotspots, and resolution efficiency across all 60 municipal wards of Mangaluru.
+                                                    See what types of issues are most common and how quickly they're being fixed, across all 60 areas of Mangaluru.
                                                 </p>
                                             </div>
 
